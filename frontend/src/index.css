@@ -1,0 +1,129 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* AWS Design System Variables */
+:root {
+  --aws-orange: #FF9900;
+  --aws-orange-dark: #ec7211;
+  --aws-squid-ink: #232F3E;
+  --aws-gray-900: #16191f;
+  --aws-gray-700: #37475a;
+  --aws-gray-600: #687078;
+  --aws-gray-400: #879596;
+  --aws-gray-300: #d5dbdb;
+  --aws-gray-200: #eaeded;
+  --aws-gray-100: #f2f3f3;
+  --aws-gray-50: #fafafa;
+}
+
+body {
+  font-family: "Amazon Ember", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: var(--aws-gray-100);
+  color: var(--aws-gray-900);
+  min-height: 100vh;
+}
+
+code {
+  font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+  background: var(--aws-gray-50);
+  padding: 2px 4px;
+  border-radius: 2px;
+  font-size: 0.9em;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-pulse {
+  animation: pulse 1.5s infinite;
+}
+
+/* AWS Button Styles */
+.aws-btn {
+  background: var(--aws-orange);
+  color: white;
+  border: none;
+  border-radius: 2px;
+  padding: 8px 16px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.aws-btn:hover {
+  background: var(--aws-orange-dark);
+}
+
+.aws-btn-secondary {
+  background: white;
+  color: var(--aws-gray-900);
+  border: 1px solid var(--aws-gray-300);
+}
+
+.aws-btn-secondary:hover {
+  background: var(--aws-gray-50);
+}
+
+/* AWS Card Styles */
+.aws-card {
+  background: white;
+  border: 1px solid var(--aws-gray-200);
+  border-radius: 2px;
+  padding: 16px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+/* AWS Form Styles */
+.aws-input {
+  border: 1px solid var(--aws-gray-300);
+  border-radius: 2px;
+  padding: 8px 12px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.aws-input:focus {
+  outline: none;
+  border-color: var(--aws-orange);
+  box-shadow: 0 0 0 1px var(--aws-orange);
+}

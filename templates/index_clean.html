@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinOps AI - AWS Cost Intelligence</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-light: #3b82f6;
+            --primary-dark: #1d4ed8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --text-light: #94a3b8;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-tertiary: #f1f5f9;
+            --border: #e2e8f0;
+            --border-light: #f1f5f9;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Subtle animated gradient background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent 30%,
+                rgba(37, 99, 235, 0.03) 50%,
+                transparent 70%
+            );
+            animation: shimmer 15s infinite linear;
+            z-index: -1;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) translateY(0) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        /* Geometric pattern background */
+        .pattern-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.03;
+            z-index: -1;
+            background-image: 
+                radial-gradient(circle at 20% 50%, var(--primary) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, var(--primary) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, var(--primary) 0%, transparent 50%);
+        }
+
+        /* Main Layout */
+        .app-container {
+            display: flex;
+            height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 320px;
+            background: var(--bg-primary);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-md);
+            z-index: 10;
+            transition: transform 0.3s ease;
+        }
+
+        /* Logo Section */
+        .logo-section {
+            padding: 30px 25px;
+            border-bottom: 1px solid var(--border-light);
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            box-shadow: 0 8px 16px rgba(37, 99, 235, 0.2);
+            animation: float-icon 3s ease-in-out infinite;
+        }
+
+        @keyframes float-icon {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .logo-text h1 {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+        }
+
+        .logo-text p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        /* Stats Grid */
+        .stats-container {
+            padding: 25px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .stats-container::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .stats-container::-webkit-scrollbar-track {
+            background: var(--bg-tertiary);
+        }
+
+        .stats-container::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 10px;
+        }
+
+        .stat-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-light);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--primary), var(--primary-light));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateX(5px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary);
+        }
+
+        .stat-card:hover::before {
+            opacity: 1;
+        }
+
+        .stat-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--bg-tertiary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 18px;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover .stat-icon {
+            background: var(--primary);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1;
+        }
+
+        .stat-change {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 8px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .stat-change.positive {
+            color: var(--success);
+        }
+
+        .stat-change.negative {
+            color: var(--danger);
+        }
+
+        /* Mini Chart */
+        .mini-chart {
+            margin-top: 15px;
+            height: 40px;
+            display: flex;
+            align-items: flex-end;
+            gap: 3px;
+        }
+
+        .chart-bar {
+            flex: 1;
+            background: linear-gradient(to top, var(--primary), var(--primary-light));
+            border-radius: 3px 3px 0 0;
+            opacity: 0.2;
+            transition: all 0.3s ease;
+        }
+
+        .chart-bar:hover {
+            opacity: 1;
+        }
+
+        .chart-bar:nth-child(1) { height: 40%; }
+        .chart-bar:nth-child(2) { height: 70%; }
+        .chart-bar:nth-child(3) { height: 45%; }
+        .chart-bar:nth-child(4) { height: 90%; }
+        .chart-bar:nth-child(5) { height: 65%; }
+        .chart-bar:nth-child(6) { height: 80%; }
+        .chart-bar:nth-child(7) { height: 55%; }
+
+        /* Action Buttons */
+        .action-section {
+            padding: 20px;
+            border-top: 1px solid var(--border-light);
+            background: var(--bg-secondary);
+        }
+
+        .action-btn {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 10px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .action-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .action-btn.primary {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .action-btn.primary:hover {
+            background: var(--primary-dark);
+            border-color: var(--primary-dark);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-primary);
+            position: relative;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            padding: 25px 35px;
+            border-bottom: 1px solid var(--border-light);
+            background: var(--bg-primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-title h2 {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 5px;
+        }
+
+        .page-title p {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .top-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .icon-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            transform: scale(1.05);
+        }
+
+        /* Chat Container */
+        .chat-wrapper {
+            flex: 1;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(to bottom, var(--bg-secondary), var(--bg-primary));
+        }
+
+        .chat-container {
+            flex: 1;
+            background: var(--bg-primary);
+            border-radius: 20px;
+            box-shadow: var(--shadow-xl);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid var(--border-light);
+        }
+
+        /* Messages Area */
+        .messages-area {
+            flex: 1;
+            padding: 25px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .messages-area::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .messages-area::-webkit-scrollbar-track {
+            background: var(--bg-tertiary);
+            border-radius: 10px;
+        }
+
+        .messages-area::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 10px;
+        }
+
+        .message {
+            max-width: 65%;
+            animation: messageIn 0.3s ease-out;
+        }
+
+        @keyframes messageIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            align-self: flex-end;
+            margin-left: auto;
+        }
+
+        .message.bot {
+            align-self: flex-start;
+        }
+
+        .message-bubble {
+            padding: 14px 18px;
+            border-radius: 18px;
+            font-size: 14px;
+            line-height: 1.5;
+            position: relative;
+        }
+
+        .message.user .message-bubble {
+            background: var(--primary);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.bot .message-bubble {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-light);
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-time {
+            font-size: 11px;
+            color: var(--text-light);
+            margin-top: 5px;
+            padding: 0 5px;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            padding: 15px 25px;
+            border-top: 1px solid var(--border-light);
+            border-bottom: 1px solid var(--border-light);
+            background: var(--bg-secondary);
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+        }
+
+        .quick-actions::-webkit-scrollbar {
+            height: 3px;
+        }
+
+        .quick-actions::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .quick-actions::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 10px;
+        }
+
+        .quick-chip {
+            padding: 8px 16px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .quick-chip:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .quick-chip i {
+            font-size: 12px;
+        }
+
+        /* Input Area */
+        .input-area {
+            padding: 20px 25px;
+            background: var(--bg-primary);
+            display: flex;
+            gap: 12px;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-light);
+            border-radius: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .input-wrapper:focus-within {
+            border-color: var(--primary);
+            background: var(--bg-primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 14px 20px;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .chat-input:focus {
+            outline: none;
+        }
+
+        .chat-input::placeholder {
+            color: var(--text-light);
+        }
+
+        .input-actions {
+            display: flex;
+            gap: 5px;
+            padding-right: 10px;
+        }
+
+        .input-icon {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-light);
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .input-icon:hover {
+            background: var(--bg-tertiary);
+            color: var(--primary);
+        }
+
+        .send-btn {
+            padding: 14px 24px;
+            background: var(--primary);
+            border: none;
+            border-radius: 14px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
+        }
+
+        .send-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
+        }
+
+        .send-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Loading Dots */
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 14px 18px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-light);
+            border-radius: 18px;
+            border-bottom-left-radius: 4px;
+            width: fit-content;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--primary);
+            border-radius: 50%;
+            animation: bounce 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes bounce {
+            0%, 60%, 100% {
+                transform: translateY(0);
+                opacity: 0.5;
+            }
+            30% {
+                transform: translateY(-10px);
+                opacity: 1;
+            }
+        }
+
+        /* Status Indicator */
+        .status-bar {
+            position: absolute;
+            top: 30px;
+            right: 35px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse-dot 2s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.2);
+                opacity: 0.5;
+            }
+        }
+
+        .status-bar.syncing .status-dot {
+            background: var(--warning);
+            animation: rotate 1s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Mobile Responsive */
+        .mobile-toggle {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-toggle {
+                display: block;
+                position: fixed;
+                top: 20px;
+                left: 20px;
+                z-index: 100;
+                width: 40px;
+                height: 40px;
+                background: var(--bg-primary);
+                border: 1px solid var(--border);
+                border-radius: 10px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                box-shadow: var(--shadow-lg);
+            }
+
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                height: 100vh;
+                transform: translateX(-100%);
+                z-index: 99;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .chat-wrapper {
+                padding: 15px;
+            }
+
+            .top-bar {
+                padding: 20px;
+            }
+
+            .page-title h2 {
+                font-size: 22px;
+            }
+
+            .message {
+                max-width: 85%;
+            }
+
+            .quick-actions {
+                padding: 10px 15px;
+            }
+        }
+
+        /* Decorative Elements */
+        .decoration-circle {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.05), rgba(37, 99, 235, 0.02));
+            pointer-events: none;
+        }
+
+        .decoration-circle.top-right {
+            top: -150px;
+            right: -150px;
+        }
+
+        .decoration-circle.bottom-left {
+            bottom: -150px;
+            left: -150px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Pattern -->
+    <div class="pattern-bg"></div>
+
+    <!-- App Container -->
+    <div class="app-container">
+        <!-- Mobile Toggle -->
+        <button class="mobile-toggle" onclick="toggleSidebar()">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Logo Section -->
+            <div class="logo-section">
+                <div class="logo-container">
+                    <div class="logo-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="logo-text">
+                        <h1>FinOps AI</h1>
+                        <p>Cost Intelligence Platform</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Container -->
+            <div class="stats-container">
+                <!-- Total Spend Card -->
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <span class="stat-label">Monthly Spend</span>
+                    </div>
+                    <div class="stat-value" id="totalSpend">$0</div>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-down"></i>
+                        <span>12% from last month</span>
+                    </div>
+                    <div class="mini-chart">
+                        <div class="chart-bar"></div>
+                        <div class="chart-bar"></div>
+                        <div class="chart-bar"></div>
+                        <div class="chart-bar"></div>
+                        <div class="chart-bar"></div>
+                        <div class="chart-bar"></div>
+                        <div class="chart-bar"></div>
+                    </div>
+                </div>
+
+                <!-- Savings Card -->
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon">
+                            <i class="fas fa-piggy-bank"></i>
+                        </div>
+                        <span class="stat-label">Potential Savings</span>
+                    </div>
+                    <div class="stat-value" id="potentialSavings">$0</div>
+                    <div class="stat-change positive">
+                        <i class="fas fa-lightbulb"></i>
+                        <span>23 opportunities found</span>
+                    </div>
+                </div>
+
+                <!-- Resources Card -->
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon">
+                            <i class="fas fa-server"></i>
+                        </div>
+                        <span class="stat-label">Active Resources</span>
+                    </div>
+                    <div class="stat-value" id="activeResources">0</div>
+                    <div class="stat-change negative">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>5% increase</span>
+                    </div>
+                </div>
+
+                <!-- Efficiency Card -->
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon">
+                            <i class="fas fa-tachometer-alt"></i>
+                        </div>
+                        <span class="stat-label">Cost Efficiency</span>
+                    </div>
+                    <div class="stat-value" id="efficiency">0%</div>
+                    <div class="stat-change positive">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Above average</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Section -->
+            <div class="action-section">
+                <button class="action-btn primary" onclick="syncData()">
+                    <i class="fas fa-sync-alt"></i>
+                    Sync AWS Data
+                </button>
+                <button class="action-btn" onclick="generateReport()">
+                    <i class="fas fa-file-alt"></i>
+                    Generate Report
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Decorative Elements -->
+            <div class="decoration-circle top-right"></div>
+            <div class="decoration-circle bottom-left"></div>
+
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <div class="page-title">
+                    <h2>AWS Cost Optimizer</h2>
+                    <p>AI-powered insights to optimize your cloud infrastructure</p>
+                </div>
+                <div class="top-actions">
+                    <button class="icon-btn" title="Notifications">
+                        <i class="fas fa-bell"></i>
+                    </button>
+                    <button class="icon-btn" title="Settings">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Status Bar -->
+            <div class="status-bar" id="statusBar">
+                <span class="status-dot"></span>
+                <span id="statusText">Connected</span>
+            </div>
+
+            <!-- Chat Wrapper -->
+            <div class="chat-wrapper">
+                <div class="chat-container">
+                    <!-- Messages Area -->
+                    <div class="messages-area" id="messages">
+                        <!-- Messages will appear here -->
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="quick-actions">
+                        <div class="quick-chip" onclick="quickQuery('What are my top cost drivers?')">
+                            <i class="fas fa-fire"></i>
+                            Top Costs
+                        </div>
+                        <div class="quick-chip" onclick="quickQuery('Show unused resources')">
+                            <i class="fas fa-trash-alt"></i>
+                            Unused
+                        </div>
+                        <div class="quick-chip" onclick="quickQuery('EC2 optimization tips')">
+                            <i class="fas fa-server"></i>
+                            EC2 Tips
+                        </div>
+                        <div class="quick-chip" onclick="quickQuery('Reserved instance recommendations')">
+                            <i class="fas fa-tag"></i>
+                            RI Savings
+                        </div>
+                        <div class="quick-chip" onclick="quickQuery('Cost trend analysis')">
+                            <i class="fas fa-chart-area"></i>
+                            Trends
+                        </div>
+                        <div class="quick-chip" onclick="quickQuery('Budget recommendations')">
+                            <i class="fas fa-wallet"></i>
+                            Budget
+                        </div>
+                    </div>
+
+                    <!-- Input Area -->
+                    <div class="input-area">
+                        <div class="input-wrapper">
+                            <input 
+                                type="text" 
+                                class="chat-input" 
+                                id="userInput"
+                                placeholder="Ask me about your AWS costs..."
+                                onkeypress="handleKeyPress(event)"
+                            >
+                            <div class="input-actions">
+                                <div class="input-icon" title="Attach file">
+                                    <i class="fas fa-paperclip"></i>
+                                </div>
+                                <div class="input-icon" title="Voice input">
+                                    <i class="fas fa-microphone"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="send-btn" onclick="sendMessage()">
+                            <i class="fas fa-paper-plane"></i>
+                            Send
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+        let conversationId = 'conv_' + Date.now();
+
+        // Toggle sidebar
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('open');
+        }
+
+        // Send message
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            // Add user message
+            addMessage(message, 'user');
+            input.value = '';
+
+            // Show typing indicator
+            showTypingIndicator();
+
+            try {
+                const response = await fetch(`${API_BASE}/chat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        conversation_id: conversationId
+                    })
+                });
+
+                const data = await response.json();
+
+                // Remove typing indicator
+                hideTypingIndicator();
+
+                if (data.status === 'success') {
+                    addMessage(data.bot_response, 'bot');
+                    updateMetrics();
+                } else {
+                    addMessage('Error: ' + data.message, 'bot');
+                }
+            } catch (error) {
+                hideTypingIndicator();
+                addMessage('Connection error. Please try again.', 'bot');
+                console.error('Error:', error);
+            }
+        }
+
+        // Quick query
+        function quickQuery(query) {
+            document.getElementById('userInput').value = query;
+            sendMessage();
+        }
+
+        // Add message
+        function addMessage(text, sender) {
+            const messagesDiv = document.getElementById('messages');
+            const messageEl = document.createElement('div');
+            messageEl.className = `message ${sender}`;
+            
+            const bubbleEl = document.createElement('div');
+            bubbleEl.className = 'message-bubble';
+            bubbleEl.textContent = text;
+            messageEl.appendChild(bubbleEl);
+            
+            const timeEl = document.createElement('div');
+            timeEl.className = 'message-time';
+            timeEl.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            messageEl.appendChild(timeEl);
+            
+            messagesDiv.appendChild(messageEl);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            return messageEl;
+        }
+
+        // Show typing indicator
+        function showTypingIndicator() {
+            const messagesDiv = document.getElementById('messages');
+            const indicator = document.createElement('div');
+            indicator.className = 'message bot';
+            indicator.id = 'typingIndicator';
+            
+            const typing = document.createElement('div');
+            typing.className = 'typing-indicator';
+            typing.innerHTML = `
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            `;
+            indicator.appendChild(typing);
+            
+            messagesDiv.appendChild(indicator);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        // Hide typing indicator
+        function hideTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) indicator.remove();
+        }
+
+        // Handle key press
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // Update metrics
+        async function updateMetrics() {
+            try {
+                const response = await fetch(`${API_BASE}/summary`);
+                const data = await response.json();
+
+                if (data.status === 'success' || data.status === 'active') {
+                    animateValue('totalSpend', 0, data.total_cost || 0, 1500, '$');
+                    animateValue('potentialSavings', 0, data.total_potential_savings || 0, 1500, '$');
+                    animateValue('activeResources', 0, data.total_resources || 0, 1500);
+                    animateValue('efficiency', 0, data.efficiency || 85, 1500, '', '%');
+                }
+            } catch (error) {
+                console.error('Error updating metrics:', error);
+            }
+        }
+
+        // Animate values
+        function animateValue(id, start, end, duration, prefix = '', suffix = '') {
+            const element = document.getElementById(id);
+            const range = end - start;
+            const increment = range / (duration / 16);
+            let current = start;
+            
+            const timer = setInterval(() => {
+                current += increment;
+                if ((increment > 0 && current >= end) || (increment < 0 && current <= end)) {
+                    current = end;
+                    clearInterval(timer);
+                }
+                element.textContent = prefix + Math.round(current).toLocaleString() + suffix;
+            }, 16);
+        }
+
+        // Sync data
+        async function syncData() {
+            const statusBar = document.getElementById('statusBar');
+            const statusText = document.getElementById('statusText');
+            
+            statusBar.className = 'status-bar syncing';
+            statusText.textContent = 'Syncing...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/sync`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ days: 30 })
+                });
+
+                const data = await response.json();
+                
+                statusBar.className = 'status-bar';
+                statusText.textContent = data.status === 'success' ? 'Connected' : 'Error';
+                
+                if (data.status === 'success') {
+                    addMessage('✅ Sync completed successfully!', 'bot');
+                    updateMetrics();
+                } else {
+                    addMessage(`⚠️ ${data.message}`, 'bot');
+                }
+            } catch (error) {
+                statusBar.className = 'status-bar';
+                statusText.textContent = 'Error';
+                addMessage('❌ Sync failed. Please check your connection.', 'bot');
+            }
+        }
+
+        // Generate report
+        async function generateReport() {
+            showTypingIndicator();
+            
+            try {
+                const response = await fetch(`${API_BASE}/report`);
+                const data = await response.json();
+                
+                hideTypingIndicator();
+                
+                if (data.status === 'success') {
+                    addMessage('📊 Report Generated:\n\n' + data.report, 'bot');
+                } else {
+                    addMessage('Error generating report: ' + data.message, 'bot');
+                }
+            } catch (error) {
+                hideTypingIndicator();
+                addMessage('Error generating report.', 'bot');
+            }
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            addMessage('👋 Hello! I\'m your AI assistant for AWS cost optimization. How can I help you save money today?', 'bot');
+            updateMetrics();
+        });
+    </script>
+</body>
+</html>

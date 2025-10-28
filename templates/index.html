@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWS Cost Explorer - FinOps Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Amazon Ember", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            background: #f2f3f3;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* AWS Header Style */
+        .aws-header {
+            background: #232F3E;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+        }
+
+        .aws-logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .aws-logo-icon {
+            background: #FF9900;
+            padding: 4px 8px;
+            border-radius: 2px;
+            font-weight: bold;
+        }
+
+        .main-wrapper {
+            flex: 1;
+            display: flex;
+        }
+
+        .aws-sidebar {
+            width: 240px;
+            background: white;
+            border-right: 1px solid #d5dbdb;
+            padding: 0;
+        }
+
+        .service-title {
+            padding: 16px 20px;
+            border-bottom: 1px solid #eaeded;
+            font-size: 18px;
+            font-weight: 700;
+            color: #16191f;
+        }
+
+        .nav-section {
+            padding: 12px 0;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 8px 20px;
+            color: #16191f;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background 0.2s;
+            cursor: pointer;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+        }
+
+        .nav-item:hover {
+            background: #f2f3f3;
+        }
+
+        .nav-item.active {
+            background: #fafafa;
+            border-left: 3px solid #FF9900;
+            padding-left: 17px;
+            font-weight: 700;
+        }
+
+        .stats-section {
+            padding: 20px;
+            border-top: 1px solid #eaeded;
+        }
+
+        .stat-card {
+            background: #fafafa;
+            border: 1px solid #d5dbdb;
+            border-radius: 2px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #687078;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #16191f;
+        }
+
+        .stat-value.cost {
+            color: #FF9900;
+        }
+
+        .main-content {
+            flex: 1;
+            background: white;
+            margin: 20px;
+            border-radius: 2px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .content-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #eaeded;
+        }
+
+        .content-header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #16191f;
+            margin-bottom: 4px;
+        }
+
+        .content-header p {
+            color: #687078;
+            font-size: 14px;
+        }
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 24px;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding: 16px;
+            background: #fafafa;
+            border: 1px solid #eaeded;
+            border-radius: 2px;
+            max-height: 400px;
+        }
+
+        .message {
+            padding: 12px 16px;
+            border-radius: 2px;
+            max-width: 80%;
+            word-wrap: break-word;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            align-self: flex-end;
+            background: #FF9900;
+            color: white;
+        }
+
+        .message.bot {
+            align-self: flex-start;
+            background: white;
+            border: 1px solid #d5dbdb;
+            color: #16191f;
+        }
+
+        .input-area {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .input-area input {
+            flex: 1;
+            padding: 10px 12px;
+            border: 1px solid #d5dbdb;
+            border-radius: 2px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        .input-area input:focus {
+            outline: none;
+            border-color: #FF9900;
+            box-shadow: 0 0 0 1px #FF9900;
+        }
+
+        .aws-button {
+            padding: 10px 20px;
+            background: #FF9900;
+            color: white;
+            border: none;
+            border-radius: 2px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .aws-button:hover {
+            background: #ec7211;
+        }
+
+        .aws-button:active {
+            background: #dd6b10;
+        }
+
+        .aws-button.secondary {
+            background: white;
+            color: #16191f;
+            border: 1px solid #d5dbdb;
+        }
+
+        .aws-button.secondary:hover {
+            background: #fafafa;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .quick-btn {
+            padding: 10px;
+            background: white;
+            border: 1px solid #d5dbdb;
+            border-radius: 2px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #16191f;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .quick-btn:hover {
+            background: #fafafa;
+            border-color: #FF9900;
+            color: #FF9900;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #667eea;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+            margin-left: 5px;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                min-height: auto;
+            }
+
+            .sidebar {
+                padding: 20px;
+            }
+
+            .main-content {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .message {
+                max-width: 95%;
+            }
+
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- AWS Header Bar -->
+    <div class="aws-header">
+        <div class="aws-logo">
+            <span class="aws-logo-icon">AWS</span>
+            <span>Cost Explorer</span>
+        </div>
+    </div>
+
+    <div class="main-wrapper">
+        <!-- AWS Sidebar -->
+        <div class="aws-sidebar">
+            <div class="service-title">Cost Management</div>
+            
+            <div class="nav-section">
+                <button class="nav-item active" onclick="setActiveNav(this)">💬 Chat Assistant</button>
+                <button class="nav-item" onclick="setActiveNav(this)">📊 Cost Explorer</button>
+                <button class="nav-item" onclick="setActiveNav(this)">💡 Recommendations</button>
+                <button class="nav-item" onclick="setActiveNav(this)">📈 Reports</button>
+                <button class="nav-item" onclick="setActiveNav(this)">⚙️ Settings</button>
+            </div>
+
+            <div class="stats-section">
+                <div class="stat-card">
+                    <div class="stat-label">Month-to-Date Spend</div>
+                    <div class="stat-value cost" id="totalSavings">$0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total Recommendations</div>
+                    <div class="stat-value" id="totalInsights">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Resources Analyzed</div>
+                    <div class="stat-value" id="dataPoints">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">System Status</div>
+                    <div class="stat-value" id="status">Ready</div>
+                </div>
+            </div>
+
+            <div style="padding: 20px; border-top: 1px solid #eaeded;">
+                <button class="aws-button" onclick="syncData()" style="width: 100%; margin-bottom: 8px;">
+                    Sync Data
+                </button>
+                <button class="aws-button secondary" onclick="generateReport()" style="width: 100%;">
+                    Generate Report
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <div class="content-header">
+                <h1>Cost Optimization Assistant</h1>
+                <p>Ask questions about your AWS costs and get AI-powered recommendations</p>
+            </div>
+
+            <div class="chat-container">
+                <div class="messages" id="messages"></div>
+
+                <div class="input-area">
+                    <input 
+                        type="text" 
+                        id="userInput" 
+                        placeholder="Ask about your AWS costs..." 
+                        onkeypress="handleKeyPress(event)"
+                    >
+                    <button class="aws-button" onclick="sendMessage()">Send</button>
+                </div>
+
+                <div class="quick-actions">
+                    <button class="quick-btn" onclick="quickQuery('What are my highest cost services?')">
+                        📊 Top Services
+                    </button>
+                    <button class="quick-btn" onclick="quickQuery('How can I optimize my EC2 spending?')">
+                        🖥️ EC2 Costs
+                    </button>
+                    <button class="quick-btn" onclick="quickQuery('What unused resources do I have?')">
+                        🗑️ Unused Resources
+                    </button>
+                    <button class="quick-btn" onclick="quickQuery('What are the top cost optimization opportunities?')">
+                        💡 Opportunities
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+        let conversationId = 'conv_' + Date.now();
+
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            // Add user message to chat
+            addMessage(message, 'user');
+            input.value = '';
+
+            // Show loading indicator
+            const loadingMsg = addMessage('Thinking' + '<span class="loading"></span>', 'bot');
+
+            try {
+                const response = await fetch(`${API_BASE}/chat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        conversation_id: conversationId
+                    })
+                });
+
+                const data = await response.json();
+
+                // Remove loading message
+                loadingMsg.remove();
+
+                if (data.status === 'success') {
+                    addMessage(data.bot_response, 'bot');
+                    updateStats();
+                } else {
+                    addMessage('Error: ' + data.message, 'bot');
+                }
+            } catch (error) {
+                loadingMsg.remove();
+                addMessage('Connection error. Please try again.', 'bot');
+                console.error('Error:', error);
+            }
+        }
+
+        function quickQuery(query) {
+            document.getElementById('userInput').value = query;
+            sendMessage();
+        }
+
+        function addMessage(text, sender) {
+            const messagesDiv = document.getElementById('messages');
+            const messageEl = document.createElement('div');
+            messageEl.className = `message ${sender}`;
+            messageEl.innerHTML = text;
+            messagesDiv.appendChild(messageEl);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            return messageEl;
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        async function updateStats() {
+            try {
+                const response = await fetch(`${API_BASE}/summary`);
+                const data = await response.json();
+
+                if (data.status === 'success' || data.status === 'active') {
+                    document.getElementById('totalInsights').textContent = data.total_insights || 0;
+                    document.getElementById('totalSavings').textContent = '$' + (data.total_potential_savings || 0).toFixed(0);
+                    document.getElementById('dataPoints').textContent = 
+                        (data.collection_stats?.cost_records || 0).toLocaleString();
+                }
+            } catch (error) {
+                console.error('Error updating stats:', error);
+            }
+        }
+
+        async function syncData() {
+            document.getElementById('status').textContent = 'Syncing...';
+            try {
+                const response = await fetch(`${API_BASE}/sync`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ days: 30 })
+                });
+
+                const data = await response.json();
+                document.getElementById('status').textContent = data.status === 'success' ? 'Ready' : 'Error';
+                addMessage(`Sync completed: ${data.data_points} data points processed, ${data.insights_generated} insights generated.`, 'bot');
+                updateStats();
+            } catch (error) {
+                document.getElementById('status').textContent = 'Error';
+                addMessage('Sync failed. Please check your AWS credentials.', 'bot');
+                console.error('Error:', error);
+            }
+        }
+
+        async function generateReport() {
+            try {
+                const response = await fetch(`${API_BASE}/report`);
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    addMessage('📊 Report Generated:\n\n' + data.report, 'bot');
+                } else {
+                    addMessage('Error generating report.', 'bot');
+                }
+            } catch (error) {
+                addMessage('Error generating report.', 'bot');
+                console.error('Error:', error);
+            }
+        }
+
+        // Set active navigation item
+        function setActiveNav(element) {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            element.classList.add('active');
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            addMessage('Welcome to AWS Cost Explorer! I\'m your AI assistant for cost optimization. I can help you analyze spending patterns, identify savings opportunities, and optimize your AWS resources.', 'bot');
+            updateStats();
+        });
+    </script>
+</body>
+</html>
