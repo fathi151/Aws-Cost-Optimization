@@ -1,89 +1,135 @@
-FinOps Chatbot for AWS
-AI-Powered AWS Cost Optimization Assistant
+# AWS Cost Optimization Chatbot
 
-A comprehensive FinOps solution that leverages artificial intelligence to help organizations optimize their AWS cloud spending. This chatbot analyzes AWS cost data, identifies optimization opportunities, and provides actionable insights through an intuitive web interface.
+## Project Description
+This project provides an AI-powered chatbot designed to help users optimize their AWS costs. It integrates with AWS services to analyze spending, identify areas for improvement, and offer actionable recommendations. The chatbot aims to simplify FinOps (Financial Operations) by providing an interactive and intelligent interface for cost management.
 
-🚀 Key Features
-Intelligent Cost Analysis: Extracts and analyzes AWS Cost Explorer data to identify spending patterns and trends
-AI-Powered Insights: Uses Mistral AI to generate personalized optimization recommendations
-Interactive Chat Interface: Natural language queries for instant cost-related answers
-Real-time Dashboards: Visual reports and analytics with React-based frontend
-Automated Data Sync: Scheduled synchronization of AWS cost data
-Optimization Reports: Comprehensive reports on cost-saving opportunities
-Vector Search: ChromaDB-powered semantic search for efficient data retrieval
-🛠️ Technology Stack
-Backend:
+## Key Features
+- **AWS Cost Analysis**: Connects to AWS accounts to retrieve and analyze cost and usage data.
+- **AI-Powered Recommendations**: Utilizes a large language model (LLM) to generate tailored cost optimization suggestions.
+- **Interactive Chat Interface**: Allows users to query their AWS spending and receive insights through a conversational interface.
+- **Reporting and Dashboards**: Provides visualizations and reports on cost trends and optimization opportunities.
+- **Email Support**: Integrates with email services for sending reports or alerts.
 
-Python 3.x
-Flask (REST API)
-AWS SDK (boto3)
-Mistral AI
-ChromaDB (Vector Database)
-SQLAlchemy (Database ORM)
-APScheduler (Task Scheduling)
-Frontend:
+## Technologies Used
+**Backend:**
+- Python
+- Flask (for API)
+- LangChain (for LLM integration)
+- ChromaDB (for vector store/knowledge base)
+- Boto3 (for AWS SDK)
+- SQLite (for local database)
 
-React 18
-Axios (HTTP Client)
-Recharts (Data Visualization)
-Tailwind CSS (Styling)
-Lucide React (Icons)
-📋 Prerequisites
-AWS Account with Cost Explorer enabled
-Mistral AI API Key
-Python 3.8+
-Node.js 16+
-🔧 Installation
-Clone the repository
-git clone https://github.com/yourusername/finops-chatbot.git
-cd finops-chatbot
+**Frontend:**
+- React.js
+- HTML/CSS/JavaScript
 
-Copy
+## Setup and Installation
 
-Insert
+### Prerequisites
+- Python 3.8+
+- Node.js and npm (for frontend)
+- AWS Account with appropriate permissions to access cost and usage data.
 
-Backend Setup
-pip install -r requirements.txt
-cp .env.example .env
-# Configure your AWS credentials and Mistral API key in .env
+### Backend Setup
 
-Copy
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/fathi151/Aws-Cost-Optimization.git
+    cd Aws-Cost-Optimization
+    ```
 
-Insert
+2.  **Create a virtual environment and activate it:**
+    ```bash
+    python -m venv venv
+    # On Windows
+    .\venv\Scripts\activate
+    # On macOS/Linux
+    source venv/bin/activate
+    ```
 
-Frontend Setup
-cd frontend
-npm install
-npm start
+3.  **Install backend dependencies:**
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-Copy
+4.  **Configure AWS Credentials:**
+    Ensure your AWS credentials are set up. You can configure them via environment variables, AWS CLI, or an `~/.aws/credentials` file. The application uses `boto3` to interact with AWS.
 
-Insert
+5.  **Environment Variables:**
+    Create a `.env` file in the root directory based on `.env.example` and fill in the necessary values, especially for your LLM API key (e.g., Mistral AI) and any email service credentials.
 
-Run the Application
-# In the root directory
-python app.py
+    ```
+    # .env example
+    MISTRAL_API_KEY=your_mistral_api_key
+    AWS_ACCESS_KEY_ID=your_aws_access_key_id
+    AWS_SECRET_ACCESS_KEY=your_aws_secret_access_key
+    AWS_REGION=your_aws_region
+    EMAIL_USERNAME=your_email@example.com
+    EMAIL_PASSWORD=your_email_password
+    EMAIL_SERVER=smtp.example.com
+    EMAIL_PORT=587
+    ```
 
-Copy
+6.  **Run the Flask backend:**
+    ```bash
+    flask run
+    ```
+    The backend API will typically run on `http://127.0.0.1:5000`.
 
-Insert
+### Frontend Setup
 
-💡 Usage
-Access the web interface at http://localhost:3000
-Sync your AWS data using the dashboard
-Ask questions like:
-"What are my highest cost services?"
-"How can I optimize my EC2 spending?"
-"What unused resources do I have?"
-📊 Sample Queries
-Cost Analysis: "Show me my spending by service"
-Optimization: "What are my top cost optimization opportunities?"
-Resources: "Which EC2 instances are underutilized?"
-Trends: "How has my spending changed over the last month?"
-🤝 Contributing
-Contributions are welcome! Please feel free to submit a Pull Request.
+1.  **Navigate to the frontend directory:**
+    ```bash
+    cd frontend
+    ```
 
-📄 License
-This project is licensed under the MIT License - see the LICENSE file for details.
+2.  **Install frontend dependencies:**
+    ```bash
+    npm install
+    ```
 
-Optimize your AWS costs with AI-powered insights and actionable recommendations.
+3.  **Start the React development server:**
+    ```bash
+    npm start
+    ```
+    The frontend application will typically open in your browser at `http://localhost:3000`.
+
+## Usage
+Once both the backend and frontend are running:
+1.  Open your web browser and navigate to `http://localhost:3000`.
+2.  Interact with the chatbot through the chat interface to ask questions about your AWS costs, get optimization recommendations, and view reports.
+3.  Use the dashboard and reports panel to visualize your AWS spending.
+
+## Project Structure
+
+```
+.
+├── .env.example             # Example environment variables
+├── .gitignore               # Git ignore file
+├── advanced_analytics.py    # Advanced analytics module
+├── app.py                   # Main Flask application
+├── aws_cost_extractor.py    # AWS cost extraction logic
+├── AWS_OPTIMIZATION_GUIDE.md # AWS optimization guide
+├── chatbot.py               # Chatbot core logic
+├── chromadb_store.py        # ChromaDB vector store integration
+├── config.py                # Application configuration
+├── data_processor.py        # Data processing utilities
+├── database.py              # Database utilities (e.g., SQLite)
+├── diagnose_issue.py        # Module for diagnosing issues
+├── email_routes.py          # Flask routes for email functionality
+├── email_service.py         # Email sending service
+├── EMAIL_SETUP.md           # Email setup documentation
+├── finops_chatbot.py        # FinOps specific chatbot logic
+├── mistral_ai_engine.py     # Mistral AI integration
+├── requirements.txt         # Python dependencies
+├── scheduler.py             # Task scheduler
+├── frontend/                # React frontend application
+│   ├── public/              # Public assets
+│   ├── src/                 # Frontend source code
+│   │   ├── components/      # React components (ChatInterface, Dashboard, etc.)
+│   │   ├── App.js           # Main App component
+│   │   └── index.js         # Entry point
+│   ├── package.json         # Frontend dependencies
+│   └── package-lock.json    # Frontend dependency lock file
+├── templates/               # HTML templates
+└── tests/                   # Unit and integration tests
