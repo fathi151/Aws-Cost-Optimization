@@ -4,6 +4,7 @@ import Dashboard from './components/Dashboard';
 import ChatInterface from './components/ChatInterface';
 import InsightsPanel from './components/InsightsPanel';
 import ReportsPanel from './components/ReportsPanel';
+import EmailSupport from './components/EmailSupport';
 import { Menu, X } from 'lucide-react';
 
 const API_BASE = 'http://localhost:5000/api';
@@ -166,6 +167,7 @@ function App() {
               {activeTab === 'dashboard' && 'Cost Explorer Dashboard'}
               {activeTab === 'insights' && 'Cost Recommendations'}
               {activeTab === 'reports' && 'Cost Reports'}
+               {activeTab === 'email' && 'Cost Reports'}
             </h1>
             <p className="text-sm text-gray-600 mt-1">Powered by AI-driven cost analysis</p>
           </div>
@@ -176,9 +178,13 @@ function App() {
             {activeTab === 'chat' && <ChatInterface onStatsUpdate={updateStats} />}
             {activeTab === 'insights' && <InsightsPanel />}
             {activeTab === 'reports' && <ReportsPanel />}
+            {activeTab==='email' && <EmailSupport />}
           </div>
         </div>
       </div>
+
+      {/* Email Support Button */}
+      <EmailSupport />
     </div>
   );
 }

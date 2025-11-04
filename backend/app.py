@@ -16,6 +16,7 @@ from database import DatabaseManager
 from scheduler import DataSyncScheduler
 from advanced_analytics import AdvancedAnalytics
 import pandas as pd
+from email_routes import email_bp
 
 # Load environment variables
 load_dotenv()
@@ -30,7 +31,16 @@ logger = logging.getLogger(__name__)
 # Initialize Flask app
 app = Flask(__name__, template_folder='templates', static_folder='static')
 app.config['SECRET_KEY'] = config.SECRET_KEY
-CORS(app, origins=config.CORS_ORIGINS)
+CORS(app, resources={
+    r"/api/*": {
+        "origins": ["http://localhost:3000"],
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "allow_headers": ["Content-Type"]
+    }
+})
+app.register_blueprint(email_bp)
+
+
 
 # Initialize components
 chatbot = FinOpsChatbot()
