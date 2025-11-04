@@ -1,135 +1,89 @@
-# AWS Cost Optimization Chatbot
+📚 Documentation du Projet AWS Cost Optimization Chatbot
+Vue d'ensemble
+Votre projet est un chatbot IA alimenté par Mistral AI conçu pour aider les utilisateurs à optimiser leurs coûts AWS. Il combine:
 
-## Project Description
-This project provides an AI-powered chatbot designed to help users optimize their AWS costs. It integrates with AWS services to analyze spending, identify areas for improvement, and offer actionable recommendations. The chatbot aims to simplify FinOps (Financial Operations) by providing an interactive and intelligent interface for cost management.
+Extraction et analyse des coûts AWS
+Interface de chat interactive
+Tableaux de bord et rapports
+Service d'email pour les notifications
+Moteur d'IA pour les recommandations intelligentes
+Architecture du Projet
+Backend (Python):
 
-## Key Features
-- **AWS Cost Analysis**: Connects to AWS accounts to retrieve and analyze cost and usage data.
-- **AI-Powered Recommendations**: Utilizes a large language model (LLM) to generate tailored cost optimization suggestions.
-- **Interactive Chat Interface**: Allows users to query their AWS spending and receive insights through a conversational interface.
-- **Reporting and Dashboards**: Provides visualizations and reports on cost trends and optimization opportunities.
-- **Email Support**: Integrates with email services for sending reports or alerts.
+app.py - Application Flask principale
+chatbot.py - Logique du chatbot
+mistral_ai_engine.py - Intégration Mistral AI
+aws_cost_extractor.py - Extraction des coûts AWS
+email_service.py - Service d'envoi d'emails
+database.py - Gestion de la base de données SQLite
+scheduler.py - Tâches planifiées
+advanced_analytics.py - Analyses avancées
+Frontend (React):
 
-## Technologies Used
-**Backend:**
-- Python
-- Flask (for API)
-- LangChain (for LLM integration)
-- ChromaDB (for vector store/knowledge base)
-- Boto3 (for AWS SDK)
-- SQLite (for local database)
+ChatInterface.js - Interface de chat
+Dashboard.js - Tableau de bord
+ReportsPanel.js - Panneau de rapports
+InsightsPanel.js - Panneau d'insights
+Technologies Utilisées
+Backend: Python, Flask, LangChain, ChromaDB, Boto3
+Frontend: React.js, HTML/CSS/JavaScript
+Base de données: SQLite
+IA: Mistral AI
+Cloud: AWS
+Fonctionnalités Principales
+Analyse des coûts AWS - Connexion aux comptes AWS pour récupérer les données de dépenses
+Recommandations IA - Suggestions d'optimisation basées sur l'IA
+Interface de chat - Interaction conversationnelle avec le chatbot
+Rapports et tableaux de bord - Visualisations des tendances de coûts
+Support par email - Envoi de rapports et alertes
+Guide d'Optimisation AWS
+Le projet inclut un guide complet couvrant:
 
-**Frontend:**
-- React.js
-- HTML/CSS/JavaScript
+Optimisation du calcul (EC2, Lambda, ECS/EKS)
+Optimisation du stockage (S3, EBS)
+Optimisation des bases de données (RDS, DynamoDB)
+Optimisation réseau (VPC, Load Balancing)
+Gestion des coûts (Budgets, Tags, Instances réservées)
+Monitoring et analyse (CloudWatch, Cost Explorer)
+Meilleures pratiques et feuille de route d'optimisation
+Configuration du Service Email
+Le projet inclut un service email pour envoyer des inquiries à: maddehclement@gmail.com
 
-## Setup and Installation
+Points clés:
 
-### Prerequisites
-- Python 3.8+
-- Node.js and npm (for frontend)
-- AWS Account with appropriate permissions to access cost and usage data.
+Utilise Gmail SMTP
+Nécessite une App Password (pas le mot de passe Gmail régulier)
+Endpoints API pour envoyer des inquiries et questions
+Intégration React pour le formulaire de contact
+Installation et Démarrage
+Backend:
 
-### Backend Setup
+python -m venv venv
+.\venv\Scripts\activate
+pip install -r requirements.txt
+flask run
 
-1.  **Clone the repository:**
-    ```bash
-    git clone https://github.com/fathi151/Aws-Cost-Optimization.git
-    cd Aws-Cost-Optimization
-    ```
+Copy
 
-2.  **Create a virtual environment and activate it:**
-    ```bash
-    python -m venv venv
-    # On Windows
-    .\venv\Scripts\activate
-    # On macOS/Linux
-    source venv/bin/activate
-    ```
+Insert
 
-3.  **Install backend dependencies:**
-    ```bash
-    pip install -r requirements.txt
-    ```
+Frontend:
 
-4.  **Configure AWS Credentials:**
-    Ensure your AWS credentials are set up. You can configure them via environment variables, AWS CLI, or an `~/.aws/credentials` file. The application uses `boto3` to interact with AWS.
+cd frontend
+npm install
+npm start
 
-5.  **Environment Variables:**
-    Create a `.env` file in the root directory based on `.env.example` and fill in the necessary values, especially for your LLM API key (e.g., Mistral AI) and any email service credentials.
+Copy
 
-    ```
-    # .env example
-    MISTRAL_API_KEY=your_mistral_api_key
-    AWS_ACCESS_KEY_ID=your_aws_access_key_id
-    AWS_SECRET_ACCESS_KEY=your_aws_secret_access_key
-    AWS_REGION=your_aws_region
-    EMAIL_USERNAME=your_email@example.com
-    EMAIL_PASSWORD=your_email_password
-    EMAIL_SERVER=smtp.example.com
-    EMAIL_PORT=587
-    ```
+Insert
 
-6.  **Run the Flask backend:**
-    ```bash
-    flask run
-    ```
-    The backend API will typically run on `http://127.0.0.1:5000`.
-
-### Frontend Setup
-
-1.  **Navigate to the frontend directory:**
-    ```bash
-    cd frontend
-    ```
-
-2.  **Install frontend dependencies:**
-    ```bash
-    npm install
-    ```
-
-3.  **Start the React development server:**
-    ```bash
-    npm start
-    ```
-    The frontend application will typically open in your browser at `http://localhost:3000`.
-
-## Usage
-Once both the backend and frontend are running:
-1.  Open your web browser and navigate to `http://localhost:3000`.
-2.  Interact with the chatbot through the chat interface to ask questions about your AWS costs, get optimization recommendations, and view reports.
-3.  Use the dashboard and reports panel to visualize your AWS spending.
-
-## Project Structure
-
-```
-.
-├── .env.example             # Example environment variables
-├── .gitignore               # Git ignore file
-├── advanced_analytics.py    # Advanced analytics module
-├── app.py                   # Main Flask application
-├── aws_cost_extractor.py    # AWS cost extraction logic
-├── AWS_OPTIMIZATION_GUIDE.md # AWS optimization guide
-├── chatbot.py               # Chatbot core logic
-├── chromadb_store.py        # ChromaDB vector store integration
-├── config.py                # Application configuration
-├── data_processor.py        # Data processing utilities
-├── database.py              # Database utilities (e.g., SQLite)
-├── diagnose_issue.py        # Module for diagnosing issues
-├── email_routes.py          # Flask routes for email functionality
-├── email_service.py         # Email sending service
-├── EMAIL_SETUP.md           # Email setup documentation
-├── finops_chatbot.py        # FinOps specific chatbot logic
-├── mistral_ai_engine.py     # Mistral AI integration
-├── requirements.txt         # Python dependencies
-├── scheduler.py             # Task scheduler
-├── frontend/                # React frontend application
-│   ├── public/              # Public assets
-│   ├── src/                 # Frontend source code
-│   │   ├── components/      # React components (ChatInterface, Dashboard, etc.)
-│   │   ├── App.js           # Main App component
-│   │   └── index.js         # Entry point
-│   ├── package.json         # Frontend dependencies
-│   └── package-lock.json    # Frontend dependency lock file
-├── templates/               # HTML templates
-└── tests/                   # Unit and integration tests
+Structure du Projet (Organisée)
+amazon/
+├── backend/              # Tous les fichiers backend
+├── frontend/             # Application React
+├── config/               # Configuration et variables d'environnement
+├── tests/                # Tests unitaires
+├── scripts/              # Scripts utilitaires
+├── docs/                 # Documentation
+├── templates/            # Templates HTML
+└── requirements.txt      # Dépendances Python
